@@ -111,15 +111,18 @@ const Lunar = () => {
       if (rendererRef.current && mountRef.current) {
         const parent = mountRef.current.parentElement;
         const width = parent.clientWidth;
-        const height = isMobile ? 400 : parent.clientHeight; // Fixed height for mobile
+        const height = isMobile ? 
+          Math.max(400, window.innerHeight * 0.6) : // 60vh or minimum 400px
+          parent.clientHeight;
         
         // Update renderer size
         rendererRef.current.setSize(width, height);
         
-        // Update camera frustum
+        // Update camera
+        const aspectRatio = width / height;
         const camera = new THREE.OrthographicCamera(
-          -30 * (width / height),
-          30 * (width / height),
+          -30 * aspectRatio,
+          30 * aspectRatio,
           30,
           -30,
           1,
@@ -128,7 +131,7 @@ const Lunar = () => {
         camera.position.set(0, 0, 50);
         camera.lookAt(0, 0, 0);
         
-        // Important: render the scene with new camera
+        // Render with new camera
         rendererRef.current.render(sceneRef.current, camera);
       }
     };
@@ -294,10 +297,10 @@ const Lunar = () => {
     <div style={{
       display: "flex",
       flexDirection: "column",
-      height: "100vh", // Changed from minHeight to fixed height
+      minHeight: "100vh", // Changed from height to minHeight
       width: "100vw",
       backgroundColor: "#fff",
-      overflow: "hidden", // This prevents scrolling
+      overflow: "auto", // Changed from hidden to auto for mobile
       padding: isMobile ? "10px" : "20px",
       boxSizing: "border-box" // This ensures padding doesn't cause overflow
     }}>
@@ -312,10 +315,10 @@ const Lunar = () => {
 
       <div style={{
         display: "flex",
-        flex: 1,
         flexDirection: isMobile ? "column" : "row",
         gap: isMobile ? "10px" : "20px",
-        overflow: "hidden" // Prevents scrolling in the content area
+        flex: 1,
+        minHeight: isMobile ? "auto" : "inherit" // Added for mobile
       }}>
         {/* Left Column - About and Controls */}
         <div style={{
@@ -475,13 +478,14 @@ const Lunar = () => {
           flex: 1,
           backgroundColor: "#000",
           borderRadius: "10px",
-          minHeight: isMobile ? "400px" : "calc(100vh - 140px)", // Changed height to minHeight
-          maxHeight: isMobile ? "50vh" : "calc(100vh - 140px)", // Added maxHeight
+          height: isMobile ? "60vh" : "calc(100vh - 140px)", // Changed minHeight to height
+          minHeight: isMobile ? "400px" : "auto", // Added minimum height for mobile
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
           overflow: "hidden",
-          position: "relative"
+          position: "relative",
+          marginBottom: isMobile ? "20px" : "0" // Added margin for mobile
         }}>
           {eclipseMessage && (
             <div style={{
